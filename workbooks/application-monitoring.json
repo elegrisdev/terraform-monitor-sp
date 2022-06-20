@@ -1,0 +1,305 @@
+{
+  "version": "Notebook/1.0",
+  "items": [
+    {
+      "type": 1,
+      "content": {
+        "json": "## Application Registration Monitoring\r\n---"
+      },
+      "name": "MainTitle"
+    },
+    {
+      "type": 9,
+      "content": {
+        "version": "KqlParameterItem/1.0",
+        "crossComponentResources": [
+          "value::all"
+        ],
+        "parameters": [
+          {
+            "id": "7d897fb8-4ead-472c-a2ab-82bbb5579e9e",
+            "version": "KqlParameterItem/1.0",
+            "name": "Workspace",
+            "type": 5,
+            "isRequired": true,
+            "query": "resources\n| where type == \"microsoft.operationalinsights/workspaces\"\n| project id",
+            "crossComponentResources": [
+              "value::all"
+            ],
+            "value": "/subscriptions/09db739a-edf9-402b-9a20-2874bb96ca77/resourceGroups/rg-automation-canadacentral-poc/providers/Microsoft.OperationalInsights/workspaces/logs-automation-canadacentral-poc",
+            "typeSettings": {
+              "additionalResourceOptions": []
+            },
+            "timeContext": {
+              "durationMs": 86400000
+            },
+            "queryType": 1,
+            "resourceType": "microsoft.resourcegraph/resources"
+          }
+        ],
+        "style": "pills",
+        "queryType": 1,
+        "resourceType": "microsoft.resourcegraph/resources"
+      },
+      "name": "MainParameters"
+    },
+    {
+      "type": 11,
+      "content": {
+        "version": "LinkItem/1.0",
+        "style": "tabs",
+        "links": [
+          {
+            "id": "23aa3bc6-4cb7-4be5-a672-fc975e5404fb",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Expiration",
+            "subTarget": "tabExpiration",
+            "style": "link"
+          },
+          {
+            "id": "c7c6819f-9687-4471-8b3e-a6a322657a5f",
+            "cellValue": "selectedTab",
+            "linkTarget": "parameter",
+            "linkLabel": "Audit",
+            "subTarget": "tabAudit",
+            "style": "link"
+          }
+        ]
+      },
+      "name": "MainLinks"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": " AppRegistrationExpiration_CL\n  | summarize arg_max(TimeGenerated, *) by KeyId_g\n  | where TimeGenerated > ago(1d)\n  | project\n      TimeGenerated,\n      DisplayName_s,\n      ApplicationId_g,\n      KeyId_g,\n      Type_s,\n      EndDate_value_t,\n      Status_s,\n      DaysToExpiration_d\n| summarize count() by Status_s",
+        "size": 4,
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "exportFieldName": "Status_s",
+        "exportParameterName": "Status",
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "visualization": "tiles",
+        "tileSettings": {
+          "titleContent": {
+            "columnMatch": "Status_s",
+            "formatter": 18,
+            "formatOptions": {
+              "thresholdsOptions": "icons",
+              "thresholdsGrid": [
+                {
+                  "operator": "contains",
+                  "thresholdValue": "Valid",
+                  "representation": "Available",
+                  "text": "{0}{1}"
+                },
+                {
+                  "operator": "contains",
+                  "thresholdValue": "Expired",
+                  "representation": "4",
+                  "text": "{0}{1}"
+                },
+                {
+                  "operator": "contains",
+                  "thresholdValue": "Expire Soon",
+                  "representation": "2",
+                  "text": "{0}{1}"
+                },
+                {
+                  "operator": "Default",
+                  "thresholdValue": null,
+                  "representation": "success",
+                  "text": "{0}{1}"
+                }
+              ]
+            }
+          },
+          "leftContent": {
+            "columnMatch": "count_",
+            "formatter": 12,
+            "formatOptions": {
+              "palette": "none"
+            },
+            "numberFormat": {
+              "unit": 17,
+              "options": {
+                "style": "decimal",
+                "maximumFractionDigits": 2,
+                "maximumSignificantDigits": 3
+              }
+            }
+          },
+          "showBorder": true
+        }
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "tabExpiration"
+      },
+      "name": "expirationSummary"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "### Certificates and Secrets Expiration\n---"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "tabExpiration"
+      },
+      "name": "SubTitle"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRegistrationExpiration_CL\n    | summarize arg_max(TimeGenerated, *) by KeyId_g\n    | where Status_s == '{Status}'\n    | where TimeGenerated > ago(2d)\n    | project\n        TimeGenerated,\n        DisplayName_s,\n        ApplicationId_g,\n        Type_s,\n        EndDate_value_t,\n        Status_s,\n        DaysToExpiration_d",
+        "size": 3,
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "gridSettings": {
+          "formatters": [
+            {
+              "columnMatch": "Status_s",
+              "formatter": 18,
+              "formatOptions": {
+                "thresholdsOptions": "icons",
+                "thresholdsGrid": [
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Expire Soon",
+                    "representation": "2",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "contains",
+                    "thresholdValue": "Expired",
+                    "representation": "4",
+                    "text": "{0}{1}"
+                  },
+                  {
+                    "operator": "Default",
+                    "thresholdValue": null,
+                    "representation": "success",
+                    "text": "{0}{1}"
+                  }
+                ]
+              }
+            }
+          ],
+          "sortBy": [
+            {
+              "itemKey": "DaysToExpiration_d",
+              "sortOrder": 1
+            }
+          ],
+          "labelSettings": [
+            {
+              "columnId": "TimeGenerated",
+              "label": "Timestamp"
+            },
+            {
+              "columnId": "DisplayName_s",
+              "label": "Display Name"
+            },
+            {
+              "columnId": "ApplicationId_g",
+              "label": "Application ID"
+            },
+            {
+              "columnId": "Type_s",
+              "label": "Type"
+            },
+            {
+              "columnId": "EndDate_value_t",
+              "label": "End Date"
+            },
+            {
+              "columnId": "Status_s",
+              "label": "Status"
+            },
+            {
+              "columnId": "DaysToExpiration_d",
+              "label": "Days to Expiration"
+            }
+          ]
+        },
+        "sortBy": [
+          {
+            "itemKey": "DaysToExpiration_d",
+            "sortOrder": 1
+          }
+        ]
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "tabExpiration"
+      },
+      "name": "ExpirationRequest"
+    },
+    {
+      "type": 1,
+      "content": {
+        "json": "### Applications SignIns Audit\n---"
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "tabAudit"
+      },
+      "name": "SubTitle2"
+    },
+    {
+      "type": 3,
+      "content": {
+        "version": "KqlItem/1.0",
+        "query": "AppRegistrationAudit_CL \n| project ApplicationName_s, AppId_g, RecentSignIns_d\n| distinct ApplicationName_s, AppId_g, RecentSignIns_d",
+        "size": 3,
+        "timeContext": {
+          "durationMs": 86400000
+        },
+        "queryType": 0,
+        "resourceType": "microsoft.operationalinsights/workspaces",
+        "crossComponentResources": [
+          "{Workspace}"
+        ],
+        "visualization": "table",
+        "gridSettings": {
+          "labelSettings": [
+            {
+              "columnId": "ApplicationName_s",
+              "label": "Application Name"
+            },
+            {
+              "columnId": "AppId_g",
+              "label": "Application ID"
+            },
+            {
+              "columnId": "RecentSignIns_d",
+              "label": "Recent SignIns"
+            }
+          ]
+        }
+      },
+      "conditionalVisibility": {
+        "parameterName": "selectedTab",
+        "comparison": "isEqualTo",
+        "value": "tabAudit"
+      },
+      "name": "AuditRequest"
+    }
+  ],
+  "$schema": "https://github.com/Microsoft/Application-Insights-Workbooks/blob/master/schema/workbook.json"
+}
